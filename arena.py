@@ -19,14 +19,6 @@ class Cell:
         self.content = ''
 
 
-# class BaseController:
-#     def __init__(self, _game):
-#         self.game = _game
-#
-#     def next_move(self):
-#         pass
-
-
 class Game:
     def __init__(self):
         self.game_state = 'P'
@@ -150,18 +142,9 @@ class Game:
 
         self.show_state()
 
-    # x + 1: direction, actual_heading
-    #    -1, D
-    #     1, U
-    #     0, R
-
-    # x - 1: direction, actual_heading
-    #    -1, U
-    #     1, D
-    #     0, L
-
     def show_state(self):
-        print(f"({self.head_x}, {self.head_y}), actual_heading: {self.actual_heading}")
+        pass
+        #print(f"({self.head_x}, {self.head_y}), actual_heading: {self.actual_heading}")
 
     def next(self):
         cmd = self.controller.get_direction()
@@ -169,5 +152,5 @@ class Game:
 
 
 game = Game()
-ctl = RandomController(game, ca, 10)
+ctl = RandomController(game, ca, 1)
 ca.mainloop()
