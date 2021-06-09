@@ -52,7 +52,7 @@ class NaiveRandomController(BaseController):
             elif right_content != 'B':
                 cmds.append(1)
 
-        print('choices', cmd, cmds)
+        # print('choices', cmd, cmds)
 
         if cmd == None and len(cmds):
             cmd = random.choice(cmds)
