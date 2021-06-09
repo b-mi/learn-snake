@@ -1,7 +1,7 @@
 import tkinter as tk
 import random
 
-from BaseController import RandomController
+from BaseController import NaiveRandomController, RandomController
 from BaseController import BaseController
 
 width, height = 800, 800
@@ -9,7 +9,7 @@ arena_size_x = 12
 arena_size_y = 12
 margin = 30
 
-ca = tk.Canvas(width=width, height=height)
+ca = tk.Canvas(width=width, height=height, bg='whitesmoke')
 ca.pack()
 
 
@@ -20,9 +20,10 @@ class Cell:
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, canvas):
         self.game_state = 'P'
         self.bodies = []
+        self.canvas = canvas
         dx = (width - 2 * margin) / arena_size_x
         dy = (height - 2 * margin) / arena_size_y
         dx = min(dx, dy)
@@ -67,13 +68,13 @@ class Game:
     def set_state(self, x, y, part):
         color = None
         if part == 'H':  # head
-            color = 'black'
-        elif part == 'B':  # body
             color = 'gray'
+        elif part == 'B':  # body
+            color = 'silver'
         elif part == 'A':  # apple
             color = 'red'
         else:
-            color = 'white'  # empty
+            color = 'whitesmoke'  # empty
 
         a = self.arena[y][x]
         a.content = part
@@ -90,7 +91,7 @@ class Game:
     def update_pos(self, val, add_val, limit):
         return (val + add_val) % limit
 
-    def execute(self, command):
+    def get_pos_info(self, command):
         x = self.head_x
         y = self.head_y
         new_heading = ''
@@ -125,6 +126,11 @@ class Game:
             y = self.update_pos(y, 1, arena_size_y)
 
         cell = self.arena[y][x]
+        return x, y, new_heading, cell
+
+    def execute(self, command):
+
+        x, y, new_heading, cell = self.get_pos_info(command)
         cell_content = cell.content
 
         self.set_state(self.head_x, self.head_y, 'B')
@@ -146,11 +152,21 @@ class Game:
         pass
         #print(f"({self.head_x}, {self.head_y}), actual_heading: {self.actual_heading}")
 
+        #-1: from left
+        #0: from ahead
+        #1: from right
+
+    def get_content(self, command):
+        x, y, new_heading, cell = self.get_pos_info(command)
+        return cell.content
+
+
     def next(self):
         cmd = self.controller.get_direction()
         self.execute(cmd)
 
 
-game = Game()
-ctl = RandomController(game, ca, 1)
+game = Game(ca)
+# ctl = RandomController(game, 100)
+ctl = NaiveRandomController(game, 100)
 ca.mainloop()
