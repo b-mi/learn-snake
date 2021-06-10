@@ -1,8 +1,7 @@
 import tkinter as tk
 import random
 
-from BaseController import NaiveRandomController, RandomController
-from BaseController import BaseController
+from Controllers import BaseController, NaiveRandomController, RandomController, KeyboardController
 
 width, height = 800, 800
 arena_size_x = 12
@@ -168,5 +167,6 @@ class Game:
 
 game = Game(ca)
 # ctl = RandomController(game, 100)
-ctl = NaiveRandomController(game, 100)
+# ctl = NaiveRandomController(game, 100)
+ctl = KeyboardController(game)
 ca.mainloop()

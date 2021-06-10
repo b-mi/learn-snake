@@ -63,3 +63,53 @@ class NaiveRandomController(BaseController):
         else:
             self.game.execute(cmd)
             self.game.canvas.after(self.ticks, self.next_move)
+
+
+class KeyboardController(BaseController):
+    def __init__(self, _game):
+        super().__init__(_game)
+        self.game.canvas.focus_set()
+        self.game.canvas.bind('<Left>', self.move)
+        self.game.canvas.bind('<Right>', self.move)
+        self.game.canvas.bind('<Up>', self.move)
+        self.game.canvas.bind('<Down>', self.move)
+
+    def move(self, event):
+        cmd = None
+        ask = event.keysym[0] # L, R, U, D
+        act = self.game.actual_heading # L, R, U, D
+
+        if ask == 'L': # chce ist do lava
+            if act == 'U':
+                cmd = -1
+            elif act == 'D':
+                cmd = 1
+            else:
+                cmd = 0
+        elif ask == 'R': # chce is doprava
+            if act == 'U':
+                cmd = 1
+            elif act == 'D':
+                cmd = -1
+            else:
+                cmd = 0
+        elif ask == 'U': # chce ist hore
+            if act == 'L':
+                cmd = 1
+            elif act == 'R':
+                cmd = -1
+            else:
+                cmd = 0                
+        elif ask == 'D': # chce ist dole
+            if act == 'L':
+                cmd = -1
+            elif act == 'R':
+                cmd = 1
+            else:
+                cmd = 0                
+
+        self.game.execute(cmd)
+
+
+
+
