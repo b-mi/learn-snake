@@ -73,6 +73,7 @@ class KeyboardController(BaseController):
         self.game.canvas.bind('<Right>', self.move)
         self.game.canvas.bind('<Up>', self.move)
         self.game.canvas.bind('<Down>', self.move)
+        self.game.start_write_csv()
 
     def move(self, event):
         cmd = None
