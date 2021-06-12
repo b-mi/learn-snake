@@ -8,7 +8,7 @@ from Enums import Enums
 from Controllers import BaseController, KeyboardController
 
 width, height = 800, 800
-arena_size = 9
+arena_size = 4
 margin = 30
 refl_depth = (arena_size-1) // 2
 
@@ -38,6 +38,8 @@ class Game:
         self.bodies = []
         self.canvas = canvas
         self.csv_file_name = None
+        self.apples_eaten = 0
+        self.cells_count = arena_size * arena_size
         dx = (width - 2 * margin) / arena_size
         dy = (height - 2 * margin) / arena_size
         dx = min(dx, dy)
@@ -63,32 +65,33 @@ class Game:
 
         self.head_x = random.randrange(arena_size)
         self.head_y = random.randrange(arena_size)
-        self.set_state(self.head_x, self.head_y, Enums.HEAD)
+        self.set_cell_state(self.head_x, self.head_y, Enums.HEAD)
 
-        self.actual_heading = random.choice([Enums.LEFT, Enums.RIGHT, Enums.UP, Enums.DOWN])
+        self.actual_heading = random.choice(
+            [Enums.LEFT, Enums.RIGHT, Enums.UP, Enums.DOWN])
         if self.actual_heading in (Enums.LEFT, Enums.RIGHT):
             sign = 1 if self.actual_heading == Enums.LEFT else -1
             x = self.add_position(self.head_x, sign, arena_size)
             self.bodies.append((x, self.head_y))
-            self.set_state(x, self.head_y, Enums.BODY)
+            self.set_cell_state(x, self.head_y, Enums.BODY)
 
             x = self.add_position(x, sign, arena_size)
             self.bodies.append((x, self.head_y))
-            self.set_state(x, self.head_y, Enums.BODY)
+            self.set_cell_state(x, self.head_y, Enums.BODY)
         else:
             sign = 1 if self.actual_heading == Enums.UP else -1
             y = self.add_position(self.head_y, sign, arena_size)
             self.bodies.append((self.head_x, y))
-            self.set_state(self.head_x, y, Enums.BODY)
+            self.set_cell_state(self.head_x, y, Enums.BODY)
 
             y = self.add_position(y, sign, arena_size)
             self.bodies.append((self.head_x, y))
-            self.set_state(self.head_x, y, Enums.BODY)
+            self.set_cell_state(self.head_x, y, Enums.BODY)
 
         self.add_apple()
         self.show_state()
 
-    def set_state(self, x, y, part):
+    def set_cell_state(self, x, y, part):
         color = None
         if part == Enums.HEAD:  # head
             color = 'gray'
@@ -111,7 +114,7 @@ class Game:
             x = random.randrange(arena_size)
             y = random.randrange(arena_size)
             if self.arena[y][x].content == Enums.EMPTY:
-                self.set_state(x, y, Enums.APPLE)
+                self.set_cell_state(x, y, Enums.APPLE)
                 break
 
     def add_position(self, val, add_val, limit):
@@ -156,22 +159,37 @@ class Game:
 
     def execute(self, command):
 
+        if self.game_state == Enums.LOSS:
+            print('LOSS')
+            return
+        elif self.game_state == Enums.WIN:
+            print('WIN')
+            return
+
         x, y, new_heading, cell = self.get_pos_info(command)
         cell_content = cell.content
 
-        self.set_state(self.head_x, self.head_y, Enums.BODY)
+        self.set_cell_state(self.head_x, self.head_y, Enums.BODY)
         # hlava sa stava telom a ma sa dostat na prve miesto pola
         self.bodies.insert(0, (self.head_x, self.head_y))
         self.head_x, self.head_y = x, y
-        self.set_state(self.head_x, self.head_y, Enums.HEAD)
+        self.set_cell_state(self.head_x, self.head_y, Enums.HEAD)
 
         self.actual_heading = new_heading
 
+        if cell_content == Enums.BODY:
+            self.game_state = Enums.LOSS
         if cell_content != Enums.APPLE:
             x, y = self.bodies.pop()  # posledny kusok mizne, ale nie ak sa zedlo jabko
-            self.set_state(x, y,  Enums.EMPTY)
+            self.set_cell_state(x, y,  Enums.EMPTY)
         else:
-            self.add_apple()
+            self.apples_eaten += 1
+            print(self.apples_eaten, self.cells_count)
+            if self.apples_eaten == self.cells_count - 3:
+                self.game_state = Enums.WIN
+                print('WIN')
+            else:
+                self.add_apple()
 
         self.show_state()
 
