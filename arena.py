@@ -34,7 +34,7 @@ class Cell:
 
 class Game:
     def __init__(self, canvas):
-        self.game_state = 'P'
+        self.game_state = Enums.PLAY
         self.bodies = []
         self.canvas = canvas
         self.csv_file_name = None
@@ -65,9 +65,9 @@ class Game:
         self.head_y = random.randrange(arena_size)
         self.set_state(self.head_x, self.head_y, Enums.HEAD)
 
-        self.actual_heading = random.choice(['L', 'R', 'U', 'D'])
-        if self.actual_heading in ('L', 'R'):
-            sign = 1 if self.actual_heading == 'L' else -1
+        self.actual_heading = random.choice([Enums.LEFT, Enums.RIGHT, Enums.UP, Enums.DOWN])
+        if self.actual_heading in (Enums.LEFT, Enums.RIGHT):
+            sign = 1 if self.actual_heading == Enums.LEFT else -1
             x = self.add_position(self.head_x, sign, arena_size)
             self.bodies.append((x, self.head_y))
             self.set_state(x, self.head_y, Enums.BODY)
@@ -76,7 +76,7 @@ class Game:
             self.bodies.append((x, self.head_y))
             self.set_state(x, self.head_y, Enums.BODY)
         else:
-            sign = 1 if self.actual_heading == 'U' else -1
+            sign = 1 if self.actual_heading == Enums.UP else -1
             y = self.add_position(self.head_y, sign, arena_size)
             self.bodies.append((self.head_x, y))
             self.set_state(self.head_x, y, Enums.BODY)
@@ -122,31 +122,31 @@ class Game:
         y = self.head_y
         new_heading = ''
         if command == -1:  # left
-            if self.actual_heading == 'L':
-                new_heading = 'D'
-            elif self.actual_heading == 'R':
-                new_heading = 'U'
-            elif self.actual_heading == 'U':
-                new_heading = 'L'
+            if self.actual_heading == Enums.LEFT:
+                new_heading = Enums.DOWN
+            elif self.actual_heading == Enums.RIGHT:
+                new_heading = Enums.UP
+            elif self.actual_heading == Enums.UP:
+                new_heading = Enums.LEFT
             else:  # D
-                new_heading = 'R'
+                new_heading = Enums.RIGHT
         elif command == 1:  # right
-            if self.actual_heading == 'L':
-                new_heading = 'U'
-            elif self.actual_heading == 'R':
-                new_heading = 'D'
-            elif self.actual_heading == 'U':
-                new_heading = 'R'
+            if self.actual_heading == Enums.LEFT:
+                new_heading = Enums.UP
+            elif self.actual_heading == Enums.RIGHT:
+                new_heading = Enums.DOWN
+            elif self.actual_heading == Enums.UP:
+                new_heading = Enums.RIGHT
             else:  # D
-                new_heading = 'L'
+                new_heading = Enums.LEFT
         else:  # rovno
             new_heading = self.actual_heading
 
-        if new_heading == 'L':
+        if new_heading == Enums.LEFT:
             x = self.add_position(x, -1, arena_size)
-        elif new_heading == 'R':
+        elif new_heading == Enums.RIGHT:
             x = self.add_position(x, 1, arena_size)
-        elif new_heading == 'U':
+        elif new_heading == Enums.UP:
             y = self.add_position(y, -1, arena_size)
         else:
             y = self.add_position(y, 1, arena_size)
@@ -202,13 +202,13 @@ class Game:
         cell_cnt = 3
         x, y = self.head_x, self.head_y
 
-        if self.actual_heading == 'L':
+        if self.actual_heading == Enums.LEFT:
             instr = left
-        elif self.actual_heading == 'R':
+        elif self.actual_heading == Enums.RIGHT:
             instr = right
-        elif self.actual_heading == 'U':
+        elif self.actual_heading == Enums.UP:
             instr = up
-        elif self.actual_heading == 'D':
+        elif self.actual_heading == Enums.DOWN:
             instr = down
         else:
             raise Exception()

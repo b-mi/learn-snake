@@ -8,3 +8,9 @@ class Enums:
     APPLE = '1'
     BODY = '2'
     HEAD = '3'
+
+
+    PLAY = 0
+    WIN = 1
+    LOSS = -1
+
