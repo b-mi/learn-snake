@@ -3,13 +3,9 @@ import random
 import time
 import numpy as np
 from numpy import savetxt
+from Enums import Enums
 
-from Controllers import BaseController, NaiveRandomController, RandomController, KeyboardController
-
-EMPTY = '0'
-APPLE = '1'
-BODY = '2'
-HEAD = '3'
+from Controllers import BaseController, KeyboardController
 
 width, height = 800, 800
 arena_size = 9
@@ -27,7 +23,7 @@ class Cell:
         self.rect_id = rect_id
         self.text_id = text_id
         self.text2_id = text2_id
-        self.content = EMPTY
+        self.content = Enums.EMPTY
 
     def set_title(self, msg):
         self.canvas.itemconfig(self.text_id, text=msg)
@@ -55,49 +51,52 @@ class Game:
                 x0 = x * dx + margin
                 y0 = y * dy + margin
                 r_id = ca.create_rectangle(x0, y0, x0 + dx, y0 + dy)
-                t_id = ca.create_text(x0 + dx / 2, y0 + dy / 2, fill="dodgerblue")
-                ca.create_text(x0 + 30, y0 + 10, text=f"{str(idx)}, ({x}, {y})", fill="black")
-                t2_id = ca.create_text(x0 + 10, y0 + dy - 10, fill="green", text='0')
+                t_id = ca.create_text(
+                    x0 + dx / 2, y0 + dy / 2, fill="dodgerblue")
+                ca.create_text(x0 + 30, y0 + 10,
+                               text=f"{str(idx)}, ({x}, {y})", fill="black")
+                t2_id = ca.create_text(
+                    x0 + 10, y0 + dy - 10, fill="green", text='0')
                 cell = Cell(ca, idx, r_id, t_id, t2_id)
                 self.arena[y][x] = cell
                 idx += 1
 
         self.head_x = random.randrange(arena_size)
         self.head_y = random.randrange(arena_size)
-        self.set_state(self.head_x, self.head_y, HEAD)
+        self.set_state(self.head_x, self.head_y, Enums.HEAD)
 
         self.actual_heading = random.choice(['L', 'R', 'U', 'D'])
         if self.actual_heading in ('L', 'R'):
             sign = 1 if self.actual_heading == 'L' else -1
             x = self.add_position(self.head_x, sign, arena_size)
             self.bodies.append((x, self.head_y))
-            self.set_state(x, self.head_y, BODY)
+            self.set_state(x, self.head_y, Enums.BODY)
 
             x = self.add_position(x, sign, arena_size)
             self.bodies.append((x, self.head_y))
-            self.set_state(x, self.head_y, BODY)
+            self.set_state(x, self.head_y, Enums.BODY)
         else:
             sign = 1 if self.actual_heading == 'U' else -1
             y = self.add_position(self.head_y, sign, arena_size)
             self.bodies.append((self.head_x, y))
-            self.set_state(self.head_x, y, BODY)
+            self.set_state(self.head_x, y, Enums.BODY)
 
             y = self.add_position(y, sign, arena_size)
             self.bodies.append((self.head_x, y))
-            self.set_state(self.head_x, y, BODY)
+            self.set_state(self.head_x, y, Enums.BODY)
 
         self.add_apple()
         self.show_state()
 
     def set_state(self, x, y, part):
         color = None
-        if part == HEAD:  # head
+        if part == Enums.HEAD:  # head
             color = 'gray'
-        elif part == BODY:  # body
+        elif part == Enums.BODY:  # body
             color = 'silver'
-        elif part == APPLE:  # apple
+        elif part == Enums.APPLE:  # apple
             color = 'red'
-        elif part == EMPTY:  # empty
+        elif part == Enums.EMPTY:  # empty
             color = 'whitesmoke'
         else:
             raise Exception('bad part')
@@ -111,8 +110,8 @@ class Game:
         while True:
             x = random.randrange(arena_size)
             y = random.randrange(arena_size)
-            if self.arena[y][x].content == EMPTY:
-                self.set_state(x, y, APPLE)
+            if self.arena[y][x].content == Enums.EMPTY:
+                self.set_state(x, y, Enums.APPLE)
                 break
 
     def add_position(self, val, add_val, limit):
@@ -160,17 +159,17 @@ class Game:
         x, y, new_heading, cell = self.get_pos_info(command)
         cell_content = cell.content
 
-        self.set_state(self.head_x, self.head_y, BODY)
+        self.set_state(self.head_x, self.head_y, Enums.BODY)
         # hlava sa stava telom a ma sa dostat na prve miesto pola
         self.bodies.insert(0, (self.head_x, self.head_y))
         self.head_x, self.head_y = x, y
-        self.set_state(self.head_x, self.head_y, HEAD)
+        self.set_state(self.head_x, self.head_y, Enums.HEAD)
 
         self.actual_heading = new_heading
 
-        if cell_content != APPLE:
+        if cell_content != Enums.APPLE:
             x, y = self.bodies.pop()  # posledny kusok mizne, ale nie ak sa zedlo jabko
-            self.set_state(x, y, EMPTY)
+            self.set_state(x, y,  Enums.EMPTY)
         else:
             self.add_apple()
 
@@ -180,7 +179,6 @@ class Game:
         pass
         #print(f"({self.head_x}, {self.head_y}), actual_heading: {self.actual_heading}")
 
-
     def clear_messages(self):
         for y in range(arena_size):
             for x in range(arena_size):
@@ -188,18 +186,22 @@ class Game:
         # -1: from left
         # 0: from ahead
         # 1: from right
+
     def show_input_data(self):
-        up = ('y', -1, -1, 1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        down = ('y', 1, 1, -1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        up = ('y', -1, -1, 1)
+        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        down = ('y', 1, 1, -1)
 
-        left = ('x', -1, 1, -1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        right  = ('x', 1, -1, 1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-
+        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        left = ('x', -1, 1, -1)
+        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        right = ('x', 1, -1, 1)
 
         cells = []
         cell_cnt = 3
         x, y = self.head_x, self.head_y
-        
+
         if self.actual_heading == 'L':
             instr = left
         elif self.actual_heading == 'R':
@@ -211,12 +213,10 @@ class Game:
         else:
             raise Exception()
 
-
-
         mode, diff1, diff2, diff3 = instr
         for i in range(refl_depth):
-            x = self.add_position(x, diff1, arena_size )
-            y = self.add_position(y, diff2, arena_size )
+            x = self.add_position(x, diff1, arena_size)
+            y = self.add_position(y, diff2, arena_size)
             _x, _y = x, y
             for j in range(cell_cnt):
                 cells.append(self.arena[_y][_x])
@@ -227,12 +227,11 @@ class Game:
 
             cell_cnt += 2
 
-        idx = 0;
+        idx = 0
         self.clear_messages()
         for c in cells:
             c.set_title(str(idx))
             idx += 1
-
 
     def get_content(self, command):
         x, y, new_heading, cell = self.get_pos_info(command)
