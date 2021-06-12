@@ -108,7 +108,6 @@ class Game:
             self.set_cell_state(self.head_x, y, Enums.BODY)
 
         self.add_apple()
-        self.show_state()
 
     def set_cell_state(self, x, y, part):
         color = None
@@ -185,6 +184,8 @@ class Game:
             print('WIN')
             return
 
+        data_to_csv = self.get_csv_row(command)
+
         x, y, new_heading, cell = self.get_pos_info(command)
         cell_content = cell.content
 
@@ -208,11 +209,26 @@ class Game:
                 print('WIN')
             else:
                 self.add_apple()
+        if self.game_state == Enums.PLAY:
+            self.append_row_to_csv(data_to_csv)
 
-        self.show_state()
 
-    def show_state(self):
-        pass
+    def append_row_to_csv(self, csv_array):
+        sout = ','.join(csv_array) + '\n'
+        with open(self.csv_file_name, "a") as myfile:
+            myfile.write(sout)
+
+    def get_csv_row(self, command):
+        out_arr = []
+        from_front = self.get_input_data(Enums.FROM_FRONT)
+        from_left = self.get_input_data(Enums.FROM_LEFT)
+        from_right = self.get_input_data(Enums.FROM_RIGHT)
+        for part in (from_left, from_front, from_right):
+            for cell in part:
+                out_arr.append(cell.content)
+        out_arr.append(str(command))
+        return out_arr
+
 
     def clear_messages(self):
         for y in range(arena_size):
@@ -221,11 +237,6 @@ class Game:
         # -1: from left
         # 0: from ahead
         # 1: from right
-
-    def get_input_data_all(self):
-        from_front = self.get_input_data(Enums.FROM_FRONT)
-        from_left = self.get_input_data(Enums.FROM_LEFT)
-        from_right = self.get_input_data(Enums.FROM_RIGHT)
 
     def get_input_data(self, xfrom):
 
@@ -259,10 +270,11 @@ class Game:
             cell_cnt += 2
 
         idx = 0
-        self.clear_messages()
-        for c in cells:
-            c.set_title(str(idx))
-            idx += 1
+        # self.clear_messages()
+        # for c in cells:
+        #     c.set_title(str(idx))
+        #     idx += 1
+        return cells
 
     def get_content(self, command):
         x, y, new_heading, cell = self.get_pos_info(command)
@@ -270,28 +282,10 @@ class Game:
 
     def start_write_csv(self):
         self.csv_file_name = f"snake_rows({arena_size})_cols({arena_size})_{time.time()}.csv"
-
         print(self.csv_file_name)
         # print(strng)
 
-    def write_row_to_csv(self):
-
-        data = []
-        for y in range(arena_size):
-            for x in range(arena_size):
-                data = self.arena[y][x].con
-        np_arr = np.array(self.arena)
-        np_flat = np.concatenate(np_arr)
-        flat_str = np.char.mod('%d', np_flat).tolist()
-        strng = ';'.join(flat_str)
-
-        with open(self.csv_file_name, "a") as myfile:
-            myfile.write("appended text")
-
-#        savetxt('data.csv', anu, delimiter=',')
-#        savetxt('data.csv', anu, delimiter=',')
-
-
+ 
 game = Game(ca)
 # ctl = RandomController(game, 100)
 # ctl = NaiveRandomController(game, 100)
