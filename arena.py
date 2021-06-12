@@ -21,15 +21,19 @@ ca.pack()
 
 
 class Cell:
-    def __init__(self, canvas, id, rect_id, text_id):
+    def __init__(self, canvas, id, rect_id, text_id, text2_id):
         self.canvas = canvas
         self.id = id
         self.rect_id = rect_id
         self.text_id = text_id
+        self.text2_id = text2_id
         self.content = EMPTY
 
     def set_title(self, msg):
         self.canvas.itemconfig(self.text_id, text=msg)
+
+    def set_title2(self, msg):
+        self.canvas.itemconfig(self.text2_id, text=msg)
 
 
 class Game:
@@ -53,7 +57,8 @@ class Game:
                 r_id = ca.create_rectangle(x0, y0, x0 + dx, y0 + dy)
                 t_id = ca.create_text(x0 + dx / 2, y0 + dy / 2, fill="dodgerblue")
                 ca.create_text(x0 + 30, y0 + 10, text=f"{str(idx)}, ({x}, {y})", fill="black")
-                cell = Cell(ca, idx, r_id, t_id)
+                t2_id = ca.create_text(x0 + 10, y0 + dy - 10, fill="green", text='0')
+                cell = Cell(ca, idx, r_id, t_id, t2_id)
                 self.arena[y][x] = cell
                 idx += 1
 
@@ -97,9 +102,10 @@ class Game:
         else:
             raise Exception('bad part')
 
-        a = self.arena[y][x]
-        a.content = part
-        ca.itemconfig(a.rect_id, fill=color)
+        cell = self.arena[y][x]
+        cell.content = part
+        ca.itemconfig(cell.rect_id, fill=color)
+        cell.set_title2(part)
 
     def add_apple(self):
         while True:
@@ -186,14 +192,27 @@ class Game:
         up = ('y', -1, -1, 1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
         down = ('y', 1, 1, -1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
 
-        left = ('x', -1, 1, arena_size) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        left = ('x', -1, 1, -1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        right  = ('x', 1, -1, 1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
 
 
         cells = []
         cell_cnt = 3
         x, y = self.head_x, self.head_y
         
-        instr = left
+        if self.actual_heading == 'L':
+            instr = left
+        elif self.actual_heading == 'R':
+            instr = right
+        elif self.actual_heading == 'U':
+            instr = up
+        elif self.actual_heading == 'D':
+            instr = down
+        else:
+            raise Exception()
+
+
+
         mode, diff1, diff2, diff3 = instr
         for i in range(refl_depth):
             x = self.add_position(x, diff1, arena_size )
@@ -201,7 +220,10 @@ class Game:
             _x, _y = x, y
             for j in range(cell_cnt):
                 cells.append(self.arena[_y][_x])
-                _x = self.add_position(_x, diff3, arena_size)
+                if mode == 'y':
+                    _x = self.add_position(_x, diff3, arena_size)
+                else:
+                    _y = self.add_position(_y, diff3, arena_size)
 
             cell_cnt += 2
 
