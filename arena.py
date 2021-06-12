@@ -12,8 +12,9 @@ BODY = '2'
 HEAD = '3'
 
 width, height = 800, 800
-arena_size = 5
+arena_size = 9
 margin = 30
+refl_depth = (arena_size-1) // 2
 
 ca = tk.Canvas(width=width, height=height, bg='whitesmoke')
 ca.pack()
@@ -51,7 +52,7 @@ class Game:
                 y0 = y * dy + margin
                 r_id = ca.create_rectangle(x0, y0, x0 + dx, y0 + dy)
                 t_id = ca.create_text(x0 + dx / 2, y0 + dy / 2, fill="dodgerblue")
-                ca.create_text(x0 + 10, y0 + 10, text=str(idx), fill="black")
+                ca.create_text(x0 + 30, y0 + 10, text=f"{str(idx)}, ({x}, {y})", fill="black")
                 cell = Cell(ca, idx, r_id, t_id)
                 self.arena[y][x] = cell
                 idx += 1
@@ -177,40 +178,39 @@ class Game:
     def clear_messages(self):
         for y in range(arena_size):
             for x in range(arena_size):
-                self.arena[y][x].set_title(None)
+                self.arena[y][x].set_title('')
         # -1: from left
         # 0: from ahead
         # 1: from right
     def show_input_data(self):
+        up = ('y', -1, -1, 1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        down = ('y', 1, 1, -1) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+
+        left = ('x', -1, 1, arena_size) # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+
+
+        cells = []
+        cell_cnt = 3
+        x, y = self.head_x, self.head_y
+        
+        instr = left
+        mode, diff1, diff2, diff3 = instr
+        for i in range(refl_depth):
+            x = self.add_position(x, diff1, arena_size )
+            y = self.add_position(y, diff2, arena_size )
+            _x, _y = x, y
+            for j in range(cell_cnt):
+                cells.append(self.arena[_y][_x])
+                _x = self.add_position(_x, diff3, arena_size)
+
+            cell_cnt += 2
+
+        idx = 0;
         self.clear_messages()
-        count = arena_size * arena_size
-        head = self.arena[self.head_y][self.head_x]
-        head_idx = head.id
-        start_y = head.id // arena_size
-        start_x = head.id % arena_size
-        node = None
-
-        if self.actual_heading == 'L':
-            mode = 'y'
-            dif1 = 1
-            dif2 = -1
-
-        idx = 0
-        x = start_x
-        y = start_y
-        while True:
-            if mode == 'y':
-                y += dif1
-                if y >= arena_size:
-                    y = 0
-                    x += dif2
-                    if x < 0:
-                        x = arena_size - 1
-
-            self.arena[y][x].set_title(str(idx))
+        for c in cells:
+            c.set_title(str(idx))
             idx += 1
-            if idx > count - 2:
-                break;
+
 
     def get_content(self, command):
         x, y, new_heading, cell = self.get_pos_info(command)
