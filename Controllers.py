@@ -20,7 +20,8 @@ class KeyboardController(BaseController):
         self.game.start_write_csv()
 
     def show_data(self, event):
-        self.game.show_input_data()
+        self.game.get_input_data(Enums.FROM_RIGHT)
+        # self.game.get_input_data(Enums.FROM_FRONT)
 
     def move(self, event):
         cmd = None

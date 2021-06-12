@@ -14,3 +14,7 @@ class Enums:
     WIN = 1
     LOSS = -1
 
+    FROM_FRONT = 'F'
+    FROM_LEFT = 'L'
+    FROM_RIGHT = 'R'
+

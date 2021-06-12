@@ -8,7 +8,7 @@ from Enums import Enums
 from Controllers import BaseController, KeyboardController
 
 width, height = 800, 800
-arena_size = 4
+arena_size = 9
 margin = 30
 refl_depth = (arena_size-1) // 2
 
@@ -46,6 +46,25 @@ class Game:
         dy = min(dx, dy)
         self.arena = [[None for x in range(arena_size)]
                       for y in range(arena_size)]
+
+        self.inp_inst = {}
+        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
+        self.inp_inst[Enums.LEFT] = ('x', -1, 1, -1)
+        self.inp_inst[Enums.RIGHT] = ('x', 1, -1, 1)
+        self.inp_inst[Enums.UP] = ('y', -1, -1, 1)
+        self.inp_inst[Enums.DOWN] = ('y', 1, 1, -1)
+
+        self.rot_left = {}
+        self.rot_left[Enums.LEFT] = Enums.DOWN
+        self.rot_left[Enums.RIGHT] = Enums.UP
+        self.rot_left[Enums.UP] = Enums.LEFT
+        self.rot_left[Enums.DOWN] = Enums.RIGHT
+
+        self.rot_right = {}
+        self.rot_right[Enums.LEFT] = Enums.UP
+        self.rot_right[Enums.RIGHT] = Enums.DOWN
+        self.rot_right[Enums.UP] = Enums.RIGHT
+        self.rot_right[Enums.DOWN] = Enums.LEFT
 
         idx = 0
         for y in range(arena_size):
@@ -184,7 +203,6 @@ class Game:
             self.set_cell_state(x, y,  Enums.EMPTY)
         else:
             self.apples_eaten += 1
-            print(self.apples_eaten, self.cells_count)
             if self.apples_eaten == self.cells_count - 3:
                 self.game_state = Enums.WIN
                 print('WIN')
@@ -195,7 +213,6 @@ class Game:
 
     def show_state(self):
         pass
-        #print(f"({self.head_x}, {self.head_y}), actual_heading: {self.actual_heading}")
 
     def clear_messages(self):
         for y in range(arena_size):
@@ -205,32 +222,28 @@ class Game:
         # 0: from ahead
         # 1: from right
 
-    def show_input_data(self):
-        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        up = ('y', -1, -1, 1)
-        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        down = ('y', 1, 1, -1)
+    def get_input_data_all(self):
+        from_front = self.get_input_data(Enums.FROM_FRONT)
+        from_left = self.get_input_data(Enums.FROM_LEFT)
+        from_right = self.get_input_data(Enums.FROM_RIGHT)
 
-        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        left = ('x', -1, 1, -1)
-        # diff1, diff2, diff3  posun jednej suradnice, druhej suradnice, pri iteracii
-        right = ('x', 1, -1, 1)
+    def get_input_data(self, xfrom):
+
+        hdg = None
+        if xfrom == Enums.FROM_FRONT:
+            hdg = self.actual_heading
+        elif xfrom == Enums.FROM_LEFT:
+            hdg = self.rot_left[self.actual_heading]
+        elif xfrom == Enums.FROM_RIGHT:
+            hdg = self.rot_right[self.actual_heading]
+        else:
+            raise Exception()
+
+        instr = self.inp_inst[hdg]
 
         cells = []
         cell_cnt = 3
         x, y = self.head_x, self.head_y
-
-        if self.actual_heading == Enums.LEFT:
-            instr = left
-        elif self.actual_heading == Enums.RIGHT:
-            instr = right
-        elif self.actual_heading == Enums.UP:
-            instr = up
-        elif self.actual_heading == Enums.DOWN:
-            instr = down
-        else:
-            raise Exception()
-
         mode, diff1, diff2, diff3 = instr
         for i in range(refl_depth):
             x = self.add_position(x, diff1, arena_size)
